@@ -5,6 +5,12 @@ name: Dependabot auto-merge
 # review. This only sets the auto-merge flag; branch protection on `main`
 # decides which checks must pass first, and "Allow auto-merge" must be enabled
 # in the repository settings.
+#
+# Dependabot capitalizes "Bump" after the prefix, which violates the
+# Conventional Commits casing committed.toml enforces. The title fix below
+# keeps main's history conforming: the retitled PR covers manual squash merges
+# (the repo squash default uses the PR title), and the explicit --subject
+# covers the auto-merge path.
 
 on: pull_request
 
@@ -17,13 +23,25 @@ jobs:
     name: Auto-merge patch updates
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
+    env:
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Fetch update metadata
         id: meta
         uses: dependabot/fetch-metadata@v3
+      - name: Lowercase the subject after the type prefix
+        id: title
+        run: |
+          title="$(gh pr view "$PR_URL" --json title -q .title)"
+          fixed="$(printf '%s' "$title" | sed -E 's/^([a-z]+(\([^)]+\))?!?: )([A-Z])/\1\l\3/')"
+          if [ "$fixed" != "$title" ]; then
+            gh pr edit "$PR_URL" --title "$fixed"
+          fi
+          echo "title=$fixed" >> "$GITHUB_OUTPUT"
       - name: Enable auto-merge for patch updates
         if: steps.meta.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --auto --squash "$PR_URL" \
+            --subject "${{ steps.title.outputs.title }} (#${{ github.event.pull_request.number }})" \
+            --body ""
