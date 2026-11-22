@@ -3,6 +3,15 @@ name: Release
 on:
   push:
     branches: [main]
+  # Manual run for bootstrap and edge cases: release an exact version instead
+  # of computing one from the commits (used to cut v0.1.0, whose crates were
+  # claimed by hand). Everything downstream (binaries, crates) is identical.
+  workflow_dispatch:
+    inputs:
+      override-version:
+        description: Exact version to release; empty = compute from commits
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -55,9 +64,12 @@ jobs:
         id: release
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          OVERRIDE_VERSION: ${{ inputs.override-version }}
         run: |
           set +e
-          out="$(knope release 2>&1)"
+          args=()
+          [ -n "$OVERRIDE_VERSION" ] && args+=("--override-version=$OVERRIDE_VERSION")
+          out="$(knope release "${args[@]}" 2>&1)"
           code=$?
           echo "$out"
           if [ "$code" -eq 0 ]; then
