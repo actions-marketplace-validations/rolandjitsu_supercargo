@@ -2,6 +2,12 @@
      Entries are generated from Conventional Commits on release. -->
 
 # Changelog
+## 0.1.1 (2026-11-22)
+
+### Fixes
+
+- show the readme on crates.io
+
 ## 0.1.0 (2026-11-22)
 
 ### Features
