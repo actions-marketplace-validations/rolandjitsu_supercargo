@@ -2,6 +2,19 @@
      Entries are generated from Conventional Commits on release. -->
 
 # Changelog
+## 0.1.4 (2026-11-25)
+
+### Features
+
+- support multi-crate images via extra_crates
+- add --base-is-merge-base to plan
+- expose the gitlab template names as flags
+- publish a container image to ghcr
+
+### Fixes
+
+- quote gitlab job names in flow collections
+
 ## 0.1.3 (2026-11-25)
 
 ### Fixes
