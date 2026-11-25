@@ -2,6 +2,12 @@
      Entries are generated from Conventional Commits on release. -->
 
 # Changelog
+## 0.1.3 (2026-11-25)
+
+### Fixes
+
+- give the action a unique marketplace name
+
 ## 0.1.2 (2026-11-22)
 
 ### Fixes
